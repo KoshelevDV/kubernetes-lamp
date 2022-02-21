@@ -15,20 +15,25 @@ spec:
         app: {{ .Values.name }}
     spec:
       containers:
-      - image: mysql:5.6
+      - image: wordpress:4.8-apache
         name: {{ .Values.name }}-container
         env:
-        - name: MYSQL_ROOT_PASSWORD
+        - name: WORDPRESS_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: database
+              key: MYSQL_HOST
+        - name: WORDPRESS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: database
               key: MYSQL_ROOT_PASSWORD
-        ports:
-        - containerPort: 3306
         volumeMounts:
-          - name: mysql-pv
-            mountPath: /var/lib/mysql
+        - name: wordpress-pv
+          mountPath: /var/www/html
+        ports:
+        - containerPort: 80
       volumes:
-        - name: mysql-pv
-          persistentVolumeClaim:
-            claimName: {{ .Values.name }}-pv-claim
+      - name: wordpress-pv
+        persistentVolumeClaim:
+          claimName: {{ .Values.name }}-pv-claim
