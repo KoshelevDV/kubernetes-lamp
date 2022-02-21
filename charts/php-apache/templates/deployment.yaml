@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: {{ .Values.name }}
+  name: {{ .Values.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - image: webdevops/php-apache:alpine-3-php7
+        name: {{ .Values.name }}-container
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database
+              key: MYSQL_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: database
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: database
+              key: MYSQL_USER
+        - name: MYSQL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: database
+              key: MYSQL_HOST
+        volumeMounts:
+        - name: php-ini
+          mountPath: /opt/docker/etc/php/php.ini
+          subPath: php.ini
+        ports:
+        - containerPort: 80
+      volumes:
+      - name: php-ini
+        configMap:
+          name: php-config
